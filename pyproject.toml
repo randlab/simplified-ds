@@ -1,0 +1,25 @@
+[tool.poetry]
+name = "simplified-ds"
+version = "0.1.0"
+description = "Demonstration of simplified Direct Sampling algorithm (aka DS Best Candidate)"
+authors = ["Przemyslaw Juda <przemyslaw.juda@gmail.com>"]
+license = "MIT"
+
+[tool.poetry.dependencies]
+python = "^3.8"
+jupyter = "^1.0.0"
+jupyterlab = "^3.0.14"
+numpy = "^1.20.2"
+pyvista = "^0.29.1"
+mpstool = "^1.1.0"
+matplotlib = "^3.4.1"
+pandas = "^1.2.4"
+POT = "^0.7.0"
+properscoring = "^0.1"
+scikit-learn = "^0.24.2"
+
+[tool.poetry.dev-dependencies]
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
