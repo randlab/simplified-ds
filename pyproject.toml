@@ -11,12 +11,12 @@ jupyter = "^1.0.0"
 jupyterlab = "^3.0.14"
 numpy = "^1.20.2"
 pyvista = "^0.29.1"
-mpstool = "^1.1.0"
 matplotlib = "^3.4.1"
 pandas = "^1.2.4"
 POT = "^0.7.0"
 properscoring = "^0.1"
 scikit-learn = "^0.24.2"
+mpstool = {path = "../../source/mps_toolbox"}
 
 [tool.poetry.dev-dependencies]
 

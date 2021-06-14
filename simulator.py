@@ -19,58 +19,36 @@ class DS:
         
         self.results_dir = self.results_dir(root_dir)
         self.time_file = os.path.join(self.results_dir, 'time-seconds.txt')
-        self.epsilon = 1e-5
         
-    def create_ensemble(self, ti, ensemble_size, nthreads, seed=444, overwrite=False):
-    
-        pyrGenParams = deesseinterface.PyramidGeneralParameters(
-                    npyramidLevel=2,
-                    kx=[2, 2], ky=[2, 2], kz=[0, 0]
-                    )
-
-        pyrParams = deesseinterface.PyramidParameters(
-            nlevel=2, 
-            pyramidType='categorical_auto'
-        )
-
-        deesse_input = deesseinterface.DeesseInput(
-            nx=200, ny=200, nz=1,
-            nv=1, varname='code',
-            nTI=1, TI=ti,
-            distanceType='categorical',
-            nneighboringNode=self.nneighboringNode,
-            distanceThreshold=self.distanceThreshold+self.epsilon,
-            maxScanFraction=self.maxScanFraction,
-            pyramidGeneralParameters=pyrGenParams, # set pyramid general parameters
-            pyramidParameters=pyrParams,           # set pyramid parameters for each variable
-            npostProcessingPathMax=1,
-            seed=seed,
-            nrealization=ensemble_size)
+        
+    def create_ensemble(self, ti, ensemble_size, nthreads, seed=444, overwrite=False, dtype='int8'):
+        deesse_input = self.deesse_input(ti, ensemble_size, nthreads, seed)
         
         # run deeesse and measure time
         tic = time.perf_counter()
-        deesse_output = deesseinterface.deesseRun(deesse_input, nthreads=nthreads)
+        deesse_output = self.run_deesse(deesse_input, nthreads)
         toc = time.perf_counter()
         elapsed_time = toc-tic
         
         # build ensemble
         deesse_ensemble = Ensemble.from_deesse_output(deesse_output)
-        deesse_ensemble.to_directory(self.results_dir, overwrite=overwrite)
+        deesse_ensemble.to_directory(self.results_dir, overwrite=overwrite, dtype=dtype)
         
         # then write time (to handle overwrite correctly)
         self.write_timing(elapsed_time)
         
         return deesse_ensemble, elapsed_time
     
-    def get_ensemble(self, ti, ensemble_size, nthreads, seed=444, overwrite=False):
+    def get_ensemble(self, ti, ensemble_size, nthreads, seed=444, overwrite=False, dtype='int8'):
         try:
             ensemble, timing = self.read_ensemble()
-            if ensemble.size < ensemble_size:
+            if len(ensemble) < ensemble_size:
                 raise EmptyEnsembleError("Too small ensemble")
         except (EmptyEnsembleError, FileNotFoundError):
-            ensemble, timing = self.create_ensemble(ti, ensemble_size, nthreads, seed=seed, overwrite=True)
+            ensemble, timing = self.create_ensemble(ti, ensemble_size, nthreads, seed=seed, overwrite=True, dtype=dtype)
         
         return ensemble, timing
+
         
     
     def read_ensemble(self):
@@ -107,3 +85,35 @@ class DSBC(DS):
     def results_dir(self, root_dir):
         return os.path.join(root_dir, f'dsbc-{self.nneighboringNode}-{self.maxScanFraction}') 
        
+class FluvialMixin:
+    def deesse_input(ti, ensemble_size, nthreads, seed):
+        epsilon = 1e-5
+        pyrGenParams = deesseinterface.PyramidGeneralParameters(
+            npyramidLevel=2,
+            kx=[2, 2], ky=[2, 2], kz=[0, 0]
+            )
+
+        pyrParams = deesseinterface.PyramidParameters(
+            nlevel=2, 
+            pyramidType='categorical_auto'
+        )
+
+        deesse_input = deesseinterface.DeesseInput(
+            nx=200, ny=200, nz=1,
+            nv=1, varname='code',
+            nTI=1, TI=ti,
+            distanceType='categorical',
+            nneighboringNode=self.nneighboringNode,
+            distanceThreshold=self.distanceThreshold+epsilon,
+            maxScanFraction=self.maxScanFraction,
+            pyramidGeneralParameters=pyrGenParams, # set pyramid general parameters
+            pyramidParameters=pyrParams,           # set pyramid parameters for each variable
+            npostProcessingPathMax=1,
+            seed=seed,
+            nrealization=ensemble_size)
+        return deesse_input
+    
+        
+    def run_deesse(self, deesse_input, nthreads):
+        print('Running standard')
+        return deesseinterface.deesseRun(deesse_input, nthreads=nthreads)
