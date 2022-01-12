@@ -86,7 +86,7 @@ class DSBC(DS):
         return os.path.join(root_dir, f'dsbc-{self.nneighboringNode}-{self.maxScanFraction}') 
        
 class FluvialMixin:
-    def deesse_input(ti, ensemble_size, nthreads, seed):
+    def deesse_input(self, ti, ensemble_size, nthreads, seed):
         epsilon = 1e-5
         pyrGenParams = deesseinterface.PyramidGeneralParameters(
             npyramidLevel=2,
@@ -117,3 +117,23 @@ class FluvialMixin:
     def run_deesse(self, deesse_input, nthreads):
         print('Running standard')
         return deesseinterface.deesseRun(deesse_input, nthreads=nthreads)
+    
+class FluvialDS(DS, FluvialMixin):
+    def __init__(self, nneighboringNode,
+                 distanceThreshold,
+                 maxScanFraction,
+                 root_dir):
+        super().__init__(root_dir=root_dir,
+                 nneighboringNode=nneighboringNode,
+                 distanceThreshold=distanceThreshold,
+                 maxScanFraction=maxScanFraction)
+        
+class FluvialDSBC(DSBC, FluvialMixin):
+    def __init__(self, nneighboringNode,
+             distanceThreshold,
+             maxScanFraction,
+             root_dir):
+        super().__init__(root_dir=root_dir,
+                 nneighboringNode=nneighboringNode,
+                 distanceThreshold=distanceThreshold,
+                 maxScanFraction=maxScanFraction,)
